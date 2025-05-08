@@ -1,13 +1,18 @@
+from os.path import split
+
 import cv2
 import cvzone
 from cvzone.FaceDetectionModule import FaceDetector
+from time import time
 
 # Offset percentages
+outputFolderPath = 'Dataset/DataCollect'
 confidence = 0.8
 offsetPercentageW = 10  # Horizontal padding
 offsetPercentageH = 20  # Vertical padding
 camWidth = 640
 save = True
+debug = False
 camHeight = 480
 floatingPoint = 6
 blurThreshold = 35
@@ -18,6 +23,7 @@ detector = FaceDetector(minDetectionCon=0.5, modelSelection=0)
 
 while True:
     success, img = cap.read()
+    imgOut = img.copy()
     img, bboxes = detector.findFaces(img, draw=False)
 
     if bboxes:
@@ -70,13 +76,19 @@ while True:
 
                 # Drawing
                 cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 3)
-                cvzone.putTextRect(img,f"Score: {int(score*100)} %Blur:{blurValue:.2f}",(x,y-20),scale = 2, thickness = 3)
+                cvzone.putTextRect(imgOut,f"Score: {int(score*100)} %Blur:{blurValue:.2f}",(x,y-20),scale = 2, thickness = 3)
+                if debug:
+                    cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 3)
+                    cvzone.putTextRect(imgOut, f"Score: {int(score * 100)} %Blur:{blurValue:.2f}", (x, y - 20), scale=2,
+                                       thickness=3)
 
             if save:
-                print(all(listBlur))
+                if all(listBlur) and listBlur!=[]:
+                    timeNow = str(time()).replace('.', '')
+                    cv2.imwrite(f"{outputFolderPath}/{timeNow}.jpg",img)
 
 
 
 
-    cv2.imshow("Image", img)
+    cv2.imshow("Image", imgOut)
     cv2.waitKey(1)
